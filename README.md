@@ -29,3 +29,4 @@ obtenir reponse OLLAMA
 
 
 possibiliter de choisir ia local ou OLLAMA pour des reposes precies !
+<img width="1459" height="886" alt="nex" src="https://github.com/user-attachments/assets/ab8cef03-7911-43f8-b37e-472153fe4afc" />
