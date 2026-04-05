@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexora</title>
+    <style>
+    .hero {
+      position: relative;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      z-index: 2;
+    }
+    .hero-video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.5);
+    }
+h1, button, p {
+
+z-index: 34343;
+}
+button{
+
+padding: 30px;
+}
+.historique {
+
+
+background-color: red !important;
+text-align: center;
+max-width: 400px;
+
+}
+    </style>
+</head>
+<body>
+    <section class="hero">
+  
+     <video autoplay muted loop playsinline class="hero-video">
+      <source src="172156-846731269_small.mp4" type="video/mp4">
+    </video>
+    <div style="display: flex;flex-direction: column;">
+    
+    <button id="start">🎙️ Activer IA</button>
+    <p id="status">Clique sur le bouton et parle...</p>
+
+    <button id="getResponseButton">Obtenir la réponse d'Ollama</button>
+    <p id="responseDisplay">Réponse ici...</p>
+</div>
+   
+</section>    
+
+
+    <script>
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            alert("Votre navigateur ne supporte pas la reconnaissance vocale.");
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "fr-FR";
+            recognition.interimResults = false;
+            recognition.continuous = true;
+
+            recognition.onstart = () => {
+                document.getElementById("status").innerText = "🎤 J'écoute...";
+                console.log("🎤 Écoute activée...");
+              
+                console.log("Bievenue");
+                reponse = "bienvenu"
+            };
+
+            recognition.onspeechend = () => {
+                console.log("🛑 Fin de la parole...");
+                isRecognizing = false; // La parole est terminée, mais la reconnaissance peut continuer
+            };
+            
+            recognition.onend = () => {
+                if (!isRecognizing) {
+                    console.log("🎤 Redémarrage de la reconnaissance vocale...");
+                    recognition.start(); // Redémarre la reconnaissance vocale après qu'elle soit complètement arrêtée
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error("❌ Erreur :", event.error);
+                document.getElementById("status").innerText = "Erreur : " + event.error;
+            };
+
+      recognition.onresult = (event) => {
+    const texte = event.results[event.results.length - 1][0].transcript.toLowerCase();
+    console.log("✅ Tu as dit :", texte);
+
+    const hist = document.createElement("div");
+    hist.classList.add("historique");
+    hist.textContent = "Tu as dit : " + texte; // on ajoute le texte dans l’élément
+
+    document.getElementById("status").innerText = "Tu as dit : " + texte;
+
+    document.body.appendChild(hist); 
+
+                if (texte.includes("bonjour")) reponse = "Bonjour ! Comment vas-tu ?";
+                if (texte.includes("heure")) reponse = `Il est actuellement ${new Date().toLocaleTimeString()}.`;
+                if (texte.includes("date")) reponse = `On est le ${new Date().toLocaleDateString()}.`;
+                if (texte.includes("ton nom")) reponse = "Je suis un robot créé par toi-même.";
+                if (texte.includes("comment ça va")) reponse = "Je vais bien, merci et vous ?!";
+
+                // Ouvrir Google
+                if (texte.includes("ouvre google")) {
+                    window.open("https://www.google.com", "_blank");
+                    reponse = "Bien sûr, j'ouvre Google pour vous.";
+                }
+                if (texte.includes("ouvre youtube")) {
+                    window.open("https://www.youtube.com", "_blank");
+                    reponse = "Bien sûr, j'ouvre YouTube pour vous.";
+                }
+                if (texte.includes("ouvre edge")) {
+                    window.open("microsoft-edge:https://www.google.com", "_blank");
+                    reponse = "Bien sûr, j'ouvre Edge pour vous.";
+                }
+                if (texte.includes("ferme edge")) {
+                    window.close("microsoft-edge:https://www.google.com", "_blank");
+                    reponse = "Bien sûr, je ferme Edge pour vous.";
+                }
+                if (texte.includes("ouvre travail")) {
+                    window.open("microsoft-edge:http://localhost/pkgy1.0/", "_blank");
+                    reponse = "Bien sûr, je ferme Edge pour vous.";
+                }
+
+                // Ouvrir VS Code via le serveur
+                if (texte.includes("ouvre visual")) {
+                    fetch("http://localhost:3000/open-vscode")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre Visual Studio Code pour vous.";
+                }
+                if (texte.includes("cherche adresse ip")) {
+                    fetch("http://localhost:3000/open-ip")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre le terminal pour que vous trouviez une adresse ip.";
+                }
+                if (texte.includes("mode travail")) {
+                    fetch("http://localhost:3000/open-boulot")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, je me met en mode travail immédiatement.";
+                }
+                if (texte.includes("réveille-toi")) {
+                    fetch("http://localhost:3000/open-ia")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bonjour patron, je suis là. À votre service.";
+                }
+                if (texte.includes("repos")) {
+                    
+                      
+                    reponse = "pas de soucis je vous laisse tranquil.";
+                    recognition.stop();
+                }
+
+
+
+                if (texte.includes("ouvre x")) {
+                    fetch("http://localhost:3000/open-xamp")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre votre serveur pour vous.";
+                }
+                if (texte.includes("ouvre steam")) {
+                    fetch("http://localhost:3000/open-cod")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre Steam pour vous, je vous souhaite une bonne partie.";
+                }
+                if (texte.includes("ouvre mon go")) {
+                    fetch("http://localhost:3000/open-mongo")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre Mongo pour vous.";
+                }
+                if (texte.includes("ouvre doc")) {
+                    fetch("http://localhost:3000/open-dock")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre Docker pour vous.";
+                }
+                if (texte.includes("ouvre les nouvelles")) {
+                    fetch("http://localhost:3000/open-note")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bien sûr, j'ouvre les actualités récentes pour vous.";
+                }
+                if (texte.includes("au revoir")) {
+                    fetch("http://localhost:3000/open-bye")
+                        .then(response => response.text())
+                        .then(message => console.log(message))
+                        .catch(error => console.error("❌ Erreur :", error));
+                    reponse = "Bonne soirée patron, faites-moi signe quand vous avez besoin de moi.";
+                }
+            
+
+                // Ajouter la commande météo
+                if (texte.includes("météo")) {
+                    obtenirMeteoGeneve().then(meteo => {
+                        reponse = `La température actuelle à Genève est de ${meteo.temp}°C avec un temps ${meteo.description} avec un vent de ${meteo.vent}.`;
+                        parler(reponse);
+                    });
+                    return;  // Empêche d'ajouter une autre réponse en cas de météo
+                }
+              
+                parler(reponse);  // Faire parler l'IA si aucune commande spéciale
+            };
+
+            // Fonction pour obtenir la météo de Genève
+            async function obtenirMeteoGeneve() {
+                const url = "https://api.open-meteo.com/v1/forecast?latitude=46.2044&longitude=6.1432&current_weather=true&humidity_2m=true&timezone=Europe/Zurich";
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    const meteo = data.current_weather;
+                    
+                    return {
+                        temp: meteo.temperature,
+                        description: meteo.weathercode === 0 ? 'ensoleillé' : 'nuageux', // Simplifié pour les codes météo
+                        vent: `${meteo.windspeed} km/h`,
+                        humidite: `${meteo.humidity} %`
+                    };
+                } catch (error) {
+                    console.error("❌ Erreur de récupération de la météo :", error);
+                    return { temp: 'inconnue', description: 'indisponible', vent: 'inconnu', humidite: 'indisponible' };
+                }
+            }
+          
+            
+            
+            // Fonction pour faire parler l'IA
+            function parler(message) {
+                console.log("🗣️ Réponse :", message);
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(message);
+                utterance.lang = "fr-FR";  
+                synth.speak(utterance);
+            }
+
+            // Bouton pour activer l'écoute
+            document.getElementById("start").addEventListener("click", () => {
+                console.log("🎤 Activation...");
+                recognition.start();
+            });
+        }
+    </script>
+
+
+</body>
+</html>
